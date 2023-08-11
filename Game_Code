@@ -1,0 +1,111 @@
+from tkinter import *
+import tkinter as tk
+
+# Creating the main window
+window = tk.Tk()
+window.geometry("600x400")
+window.config(background='Black')
+window.resizable(width=False, height=False)
+window.title('Brick Breaker Game')
+
+# Creating Canvas
+w = 600
+h = 400
+x = w//2
+y = h//2
+my_canvas = Canvas(window, width=w, height=h, bg="Black")
+my_canvas.pack()
+
+# Create the dynamic paddle
+my_paddle = my_canvas.create_rectangle(x-60, y+90, x+60, y+105, fill='White')
+# Function to move the paddle to the left
+def left(event):
+    x = -10
+    y = 0
+    paddle_coords = my_canvas.coords(my_paddle)
+    if paddle_coords[0] + x > 0:                              # Check if the new left coordinate is within the canvas
+        my_canvas.move(my_paddle, x, y)
+# Function to move the paddle to the right
+def right(event):
+    x = 10
+    y = 0
+    paddle_coords = my_canvas.coords(my_paddle)
+    if paddle_coords[2] + x < w:                              # Check if the new right coordinate is within the canvas
+        my_canvas.move(my_paddle, x, y)
+
+# Bind the left and right arrow keys to paddle movement
+window.bind("<Left>", left)
+window.bind("<Right>", right)
+
+# Creating bricks
+brick_width = 97
+brick_height = 25
+GAP = 3
+ROWS = 3
+COLS = (w + GAP) // (brick_width + GAP)
+
+bricks = []
+
+for row in range(ROWS):
+    for col in range(COLS):
+        x1 = col * (brick_width + GAP)
+        y1 = row * (brick_height + GAP)
+        x2 = x1 + brick_width
+        y2 = y1 + brick_height
+        my_brick = my_canvas.create_rectangle(x1, y1, x2, y2, fill='Green')
+        bricks.append(my_brick)
+
+remaining_bricks = len(bricks)  # Track remaining bricks
+
+# Create the dynamic ball
+ball_radius = 10
+ball_x = w // 2
+ball_y = h // 2
+ball_velocity_x = 2
+ball_velocity_y = -2
+my_ball = my_canvas.create_oval(ball_x - ball_radius, ball_y - ball_radius, ball_x + ball_radius, ball_y + ball_radius, fill='Red')
+
+# Function to update the ball's position
+def update_ball():
+    global ball_velocity_x, ball_velocity_y, remaining_bricks
+    my_canvas.move(my_ball, ball_velocity_x, ball_velocity_y)
+    ball_coords = my_canvas.coords(my_ball)
+
+    if ball_coords[0] <= 0 or ball_coords[2] >= w:
+        ball_velocity_x *= -1
+
+    if ball_coords[1] <= 0:
+        ball_velocity_y *= -1
+
+    # Check for collisions with bricks
+    for my_brick in bricks:
+        brick_coords = my_canvas.coords(my_brick)
+        if ball_coords[1] <= brick_coords[3] and ball_coords[0] >= brick_coords[0] and ball_coords[2] <= brick_coords[2]:
+            ball_velocity_y *= -1
+            my_canvas.delete(my_brick)
+            bricks.remove(my_brick)
+            remaining_bricks -= 1
+            if remaining_bricks == 0:
+                ball_velocity_x = 0
+                ball_velocity_y = 0
+
+    if ball_coords[3] >= h:
+        # Handle game over condition here (e.g., reset ball position)
+        pass
+
+    # Check for collision with paddle
+    paddle_coords = my_canvas.coords(my_paddle)
+    if (
+        ball_coords[3] >= paddle_coords[1]
+        and ball_coords[0] >= paddle_coords[0]
+        and ball_coords[2] <= paddle_coords[2]
+    ):
+        ball_velocity_y = -abs(ball_velocity_y)                         # Reflect the ball upwards
+
+    window.after(16, update_ball)
+
+# Start the ball movement
+update_ball()
+
+# Start the Tkinter event loop
+window.mainloop()
