@@ -18,19 +18,21 @@ my_canvas.pack()
 
 # Create the dynamic paddle
 my_paddle = my_canvas.create_rectangle(x-60, y+90, x+60, y+105, fill='White')
+
 # Function to move the paddle to the left
 def left(event):
     x = -10
     y = 0
     paddle_coords = my_canvas.coords(my_paddle)
-    if paddle_coords[0] + x > 0:                              # Check if the new left coordinate is within the canvas
+    if paddle_coords[0] + x > 0:  # Check if the new left coordinate is within the canvas
         my_canvas.move(my_paddle, x, y)
+
 # Function to move the paddle to the right
 def right(event):
     x = 10
     y = 0
     paddle_coords = my_canvas.coords(my_paddle)
-    if paddle_coords[2] + x < w:                              # Check if the new right coordinate is within the canvas
+    if paddle_coords[2] + x < w:  # Check if the new right coordinate is within the canvas
         my_canvas.move(my_paddle, x, y)
 
 # Bind the left and right arrow keys to paddle movement
@@ -88,10 +90,14 @@ def update_ball():
             if remaining_bricks == 0:
                 ball_velocity_x = 0
                 ball_velocity_y = 0
+                my_canvas.create_text(w//2, h//2, text="You Win!", fill="White", font=("Arial", 24))
+                return
 
     if ball_coords[3] >= h:
-        # Handle game over condition here (e.g., reset ball position)
-        pass
+        ball_velocity_x = 0
+        ball_velocity_y = 0
+        my_canvas.create_text(w//2, h//2, text="You Lose!", fill="White", font=("Arial", 24))
+        return
 
     # Check for collision with paddle
     paddle_coords = my_canvas.coords(my_paddle)
@@ -100,7 +106,7 @@ def update_ball():
         and ball_coords[0] >= paddle_coords[0]
         and ball_coords[2] <= paddle_coords[2]
     ):
-        ball_velocity_y = -abs(ball_velocity_y)                         # Reflect the ball upwards
+        ball_velocity_y = -abs(ball_velocity_y)  # Reflect the ball upwards
 
     window.after(16, update_ball)
 
